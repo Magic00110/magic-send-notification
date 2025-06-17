@@ -48,9 +48,9 @@ const bodyParser = require("body-parser");
 const app = express();
 
 app.use(bodyParser.json());
-
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({
-  credential: admin.credential.cert(require("./serviceAccountKey.json")),
+  credential: admin.credential.cert(require(serviceAccount)),
 });
 
 app.post("/sendNotification", async (req, res) => {
@@ -60,6 +60,7 @@ app.post("/sendNotification", async (req, res) => {
     notification: { title, body },
     tokens: tokens, // array of tokens
   };
+  
 
   try {
     const response = await admin.messaging().sendEachForMulticast(message);

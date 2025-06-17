@@ -40,48 +40,91 @@
 // app.listen(PORT, () => {
 //   console.log(`FCM server running at http://localhost:${PORT}`);
 // });
+// ================================================================= 
+// WOrkin in loop of token
+// const express = require("express");
+// const bodyParser = require("body-parser");
+// const cors = require("cors");
+// const admin = require("firebase-admin");
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const admin = require("firebase-admin");
+// const app = express();
+// app.use(cors());
+// app.use(bodyParser.json());
 
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
+// // Use service account from environment
+// const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-// Use service account from environment
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+// });
+
+// app.post("/sendNotification", async (req, res) => {
+//   const { title, body, tokens } = req.body;
+
+//   if (!tokens || tokens.length === 0) {
+//     return res.status(400).send("No tokens provided");
+//   }
+
+//   const message = {
+//     notification: { title, body },
+//     tokens,
+//   };
+
+//   try {
+//     const response = await admin.messaging().sendEachForMulticast(message);
+//     res.json({
+//       successCount: response.successCount,
+//       failureCount: response.failureCount,
+//     });
+//   } catch (error) {
+//     res.status(500).send("Error: " + error.message);
+//   }
+// });
+
+// app.listen(3000, () => {
+//   console.log("Server is running on port 3000");
+// });
+
+const express = require('express');
+const admin = require('firebase-admin');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+
+// Load your service account key
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+// const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-app.post("/sendNotification", async (req, res) => {
-  const { title, body, tokens } = req.body;
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-  if (!tokens || tokens.length === 0) {
-    return res.status(400).send("No tokens provided");
-  }
+// 🔔 Send Notification to Topic
+app.post('/send', async (req, res) => {
+  const { title, body, topic = "all" } = req.body;
 
   const message = {
-    notification: { title, body },
-    tokens,
+    notification: {
+      title,
+      body,
+    },
+    topic,
   };
 
   try {
-    const response = await admin.messaging().sendEachForMulticast(message);
-    res.json({
-      successCount: response.successCount,
-      failureCount: response.failureCount,
-    });
+    const response = await admin.messaging().send(message);
+    res.status(200).send({ success: true, response });
   } catch (error) {
-    res.status(500).send("Error: " + error.message);
+    res.status(500).send({ success: false, error: error.message });
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 FCM Server running on port ${PORT}`);
 });
 
 

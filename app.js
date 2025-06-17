@@ -41,34 +41,47 @@
 //   console.log(`FCM server running at http://localhost:${PORT}`);
 // });
 
-
-const admin = require("firebase-admin");
 const express = require("express");
 const bodyParser = require("body-parser");
-const app = express();
+const cors = require("cors");
+const admin = require("firebase-admin");
 
+const app = express();
+app.use(cors());
 app.use(bodyParser.json());
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+// Use service account from environment
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+
 admin.initializeApp({
-  credential: admin.credential.cert(require(serviceAccount)),
+  credential: admin.credential.cert(serviceAccount),
 });
 
 app.post("/sendNotification", async (req, res) => {
   const { title, body, tokens } = req.body;
 
+  if (!tokens || tokens.length === 0) {
+    return res.status(400).send("No tokens provided");
+  }
+
   const message = {
     notification: { title, body },
-    tokens: tokens, // array of tokens
+    tokens,
   };
-  
 
   try {
     const response = await admin.messaging().sendEachForMulticast(message);
-    res.status(200).send(`Success: ${response.successCount}, Failure: ${response.failureCount}`);
+    res.json({
+      successCount: response.successCount,
+      failureCount: response.failureCount,
+    });
   } catch (error) {
-    res.status(500).send("Error sending notification: " + error);
+    res.status(500).send("Error: " + error.message);
   }
 });
 
-app.listen(3000, () => console.log("Server started on port 3000"));
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
+
 

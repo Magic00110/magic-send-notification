@@ -104,7 +104,7 @@ app.use(bodyParser.json());
 
 // 🔔 Send Notification to Topic
 app.post('/send', async (req, res) => {
-  const { title, body, topic = "all" } = req.body;
+  const { title, body, topic = "General" } = req.body;
 
   const message = {
     notification: {

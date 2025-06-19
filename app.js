@@ -103,7 +103,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // 🔔 Send Notification to Topic
-app.post('/sendf', async (req, res) => {
+app.post('/send', async (req, res) => {
   const { title, body, topic = "General" } = req.body;
 
   const message = {

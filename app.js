@@ -103,7 +103,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // 🔔 Send Notification to Topic
-app.post('/send', async (req, res) => {
+app.post('/sendf', async (req, res) => {
   const { title, body, topic = "General" } = req.body;
 
   const message = {
@@ -114,17 +114,17 @@ app.post('/send', async (req, res) => {
     topic,
   };
 
-//   try {
-//     const response = await admin.messaging().send(message);
-//     res.status(200).send({ success: true, response });
-//   } catch (error) {
-//     res.status(500).send({ success: false, error: error.message });
-//   }
-// });
+  try {
+    const response = await admin.messaging().send(message);
+    res.status(200).send({ success: true, response });
+  } catch (error) {
+    res.status(500).send({ success: false, error: error.message });
+  }
+});
 
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//   console.log(`🚀 FCM Server running on port ${PORT}`);
-// });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 FCM Server running on port ${PORT}`);
+});
 
 
